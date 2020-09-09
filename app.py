@@ -1,12 +1,15 @@
 import logging
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 from collections import Counter
 from skimage.color import rgb2lab, deltaE_cie76
 import os
 import pandas as pd
+
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 # Log parameters adjustment call
 # _ Hour (24 hours format)
@@ -27,7 +30,7 @@ def RGB2HEX(color):
 
 
 def get_image():
-    bgr_image = cv2.imread('/home/andre/Desktop/flowers.jpeg')
+    bgr_image = cv2.imread('/home/andre/Desktop/atom2.png')
     rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
     return rgb_image
 
@@ -51,9 +54,9 @@ def elbow_method():
     plt.show()
 
 
-def color_predominance_identification():
-    clf = KMeans(n_clusters=number_of_clusters_query)
-    labels = clf.fit_predict(modified_image)
+def color_predominance_identification(image, n):
+    clf = KMeans(n_clusters=n)
+    labels = clf.fit_predict(image)
 
     counts = Counter(labels)
     center_colors = clf.cluster_centers_
@@ -70,10 +73,10 @@ def color_predominance_identification():
     plt.show()
 
 
-def most_color_occurrences():
+def most_color_occurrences(image):
     hex_colors_values = []
     color_rgb = []
-    df = pd.DataFrame.from_records(modified_image, columns=('R', 'G', 'B'))
+    df = pd.DataFrame.from_records(image, columns=('R', 'G', 'B'))
 
     for idx in df.index:
         color_rgb.append(df['R'][idx])
@@ -83,7 +86,7 @@ def most_color_occurrences():
         color_rgb = []
 
     c_pixels = Counter(hex_colors_values)
-    a = c_pixels.most_common(number_of_clusters_query)
+    a = c_pixels.most_common(20)
     a_listed = []
     pixels_listed = []
 
@@ -102,15 +105,14 @@ def application():
     """" All application has its initialization from here """
     logging.info('Main application is running!')
     
-    number_of_clusters_check = 11
+    n = 11
     
     image = get_image()
-    print("Shape: {}".format(image.shape))
 
     # modified_image = cv2.resize(image, (600, 400), interpolation=cv2.INTER_AREA)
     modified_image = image.reshape(image.shape[0]*image.shape[1], 3)
 
-    elbow_method()
-    number_of_clusters_query = int(input('Number of clusters:   '))
-    color_predominance_identification()
-    # most_color_occurrences()
+    # elbow_method()
+    # number_of_clusters_query = int(input('Number of clusters:   '))
+    color_predominance_identification(modified_image, n)
+    most_color_occurrences(modified_image)
